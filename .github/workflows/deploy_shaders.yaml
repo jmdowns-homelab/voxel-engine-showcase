@@ -1,0 +1,24 @@
+name: Deploy Shaders
+on: 
+    push:
+        branches:
+        - main
+        paths:
+        - 'assets/shaders/**'
+    workflow_dispatch:
+jobs:
+    deploy-shaders:
+        runs-on: [self-hosted]
+        steps:
+        - 
+            name: checkout
+            uses: actions/checkout@v4
+        -   
+            name: send shaders to assets api
+            run: |
+                docker --context beelink cp assets/shaders assets-api:assets
+        -
+            name: create version json
+            run: |
+                echo "{\"version\": \"$(uuidgen | tr 'A-Z' 'a-z')\"}" > shaders_version.json \
+                && docker --context beelink cp shaders_version.json assets-api:assets/versions/shaders_version.json

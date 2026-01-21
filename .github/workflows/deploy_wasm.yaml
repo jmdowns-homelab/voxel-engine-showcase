@@ -1,0 +1,38 @@
+name: Deploy Wasm
+on: 
+    push:
+        branches:
+        - main
+        paths:
+        - 'src/**'
+    workflow_dispatch:
+jobs:
+    deploy-wasm:
+        runs-on: [self-hosted]
+        steps:
+        - 
+            name: checkout
+            uses: actions/checkout@v4
+        - 
+            name: build wasm files
+            run: |
+                RUSTFLAGS='-C target-feature=+atomics,+bulk-memory,+mutable-globals' \
+                cargo +nightly build --target wasm32-unknown-unknown --release -Z build-std=std,panic_abort \
+                && wasm-bindgen \
+                target/wasm32-unknown-unknown/release/voxel_engine.wasm \
+                --out-dir pkg \
+                --target web \
+                --no-typescript
+        - 
+            name: send js to assets api
+            run: |
+                docker --context beelink cp pkg/voxel_engine.js assets-api:assets/voxel_engine.js
+        -
+            name: send wasm to assets api
+            run: |
+                docker --context beelink cp pkg/voxel_engine_bg.wasm assets-api:assets/voxel_engine_bg.wasm
+        -
+            name: create version json
+            run: |
+                echo "{\"version\": \"$(uuidgen | tr 'A-Z' 'a-z')\"}" > wasm_version.json \
+                && docker --context beelink cp wasm_version.json assets-api:assets/versions/wasm_version.json

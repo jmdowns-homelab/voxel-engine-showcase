@@ -1,0 +1,134 @@
+# Voxel Engine Architecture and Documentation Guidelines
+
+When updating a function, class, or module, make sure the documentation is up-to-date.
+
+When I say 'document-investigate', follow the steps in ai_workflows/document-investigate.workflow.
+When I say 'update-docs', follow the steps in ai_workflows/update-documentation.workflow.
+When I say 'code-document the x module', follow the steps in ai_workflows/code-documentation.workflow.
+
+When I say 'domain-flow the x flow', follow the steps in domain-flow.workflow.
+
+# IMPORTANT RULES:
+1. Do not change any code unless it is to add documentation or explicitly asked.
+2. Any non-comment or documentation code suggestions should be written in a code_suggestions.txt file.
+3. All documentation must be accurate - once the documentation is written, reread the file or module to ensure it is correct.
+
+## 1-2 Documentation Structure And Guidelines.
+See [docs/rules.md)](./docs/rules.md)
+
+## 3. Architectural Principles
+
+### 3.1 Core Principles
+1. **Performance First**
+   - All major systems must be benchmarked
+   - Hot paths must be optimized
+   - Memory access patterns should be cache-friendly
+
+2. **Testability**
+   - Core logic should be pure where possible
+   - Dependencies should be injectable
+   - State management should be explicit
+
+3. **Modularity**
+   - Clear interfaces between systems
+   - Platform-specific code behind abstractions
+   - Feature flags for optional components
+
+### 3.2 Code Organization
+1. **Core Systems**
+   - Platform-agnostic core functionality
+   - No direct platform dependencies
+   - Extensive unit test coverage
+
+2. **Platform Layer**
+   - Abstracts platform-specific details
+   - Implements platform traits/interfaces
+   - Handles threading model differences
+
+3. **Rendering**
+   - WGPU-based renderer
+   - Shader management system
+   - Resource pooling and recycling
+
+## 4. Domain Flow Documentation
+
+### 4.1 Structure
+```markdown
+# [Flow Name]
+
+## Purpose
+[Brief description]
+
+## Trigger
+[What initiates this flow]
+
+## Systems Involved
+- System 1: Role
+- System 2: Role
+
+## Flow
+1. Step 1
+2. Step 2
+   - Success: Next steps
+   - Error: Error handling
+
+## Related Flows
+- [Related Flow 1]
+- [Related Flow 2]
+
+## Performance Considerations
+[Any performance implications]
+
+## See Also
+[Links to related code/docs]
+```
+
+4.2 Example Block Placement Flow
+```markdown
+# Block Placement
+
+## Purpose
+Handle player-initiated block placement in the world
+
+## Trigger
+- Right mouse click while targeting a block
+
+## Systems Involved
+- Input System: Detects click and raycast
+- World System: Modifies voxel data
+- Chunk System: Updates affected chunks
+- Render System: Updates GPU resources
+
+## Flow
+1. Player right-clicks while targeting a block face
+2. Input System detects click and performs raycast
+   - Success: Gets target block and face
+   - Error: Abort flow
+3. World System validates placement
+   - Success: Updates voxel data
+   - Error: Show feedback to player
+4. Chunk System marks affected chunks for update
+5. Render System updates GPU resources
+
+## Related Flows
+- Chunk Mesh Generation
+- Player Inventory Management
+
+## Performance Considerations
+- Batch chunk updates when possible
+- Use spatial partitioning for efficient raycasting
+```
+
+## 5. Code Review Guidelines
+- Performance
+    - Are there any unbounded loops?
+    - Are memory allocations minimized?
+    - Are expensive operations cached?
+- Documentation
+    - Are all public APIs documented?
+    - Are domain flows up to date?
+    - Are there any "TODO" comments that should be addressed?
+- Architecture
+    - Does this change respect system boundaries?
+    - Are dependencies properly managed?
+    - Is the code testable?

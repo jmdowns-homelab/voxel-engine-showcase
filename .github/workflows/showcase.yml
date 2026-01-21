@@ -1,0 +1,40 @@
+name: Push to Showcase Repository
+
+on:
+  push:
+    branches:
+      - '**'
+
+jobs:
+  push-to-showcase:
+    runs-on: [self-hosted]
+    if: contains(github.event.head_commit.message, 'showcase')
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Push to showcase repository
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          
+          git config --unset-all http.https://github.com/.extraheader
+
+          # Add showcase remote with authentication (remove first if exists)
+          git remote remove showcase 2>/dev/null || true
+          git remote add showcase https://x-access-token:${{ secrets.SHOWCASE_PAT }}@github.com/jmdowns-homelab/voxel-engine-showcase.git
+
+          # Fetch the showcase repo's main branch
+          git fetch showcase main
+
+          # Create a new branch from showcase/main
+          git checkout -B showcase-merge showcase/main
+
+          # Merge current code into it (allow unrelated histories since repos diverged)
+          git merge ${{ github.sha }} --allow-unrelated-histories -m "Merge from voxel-engine: ${{ github.event.head_commit.message }}"
+
+          # Push the merged result
+          git push showcase showcase-merge:main

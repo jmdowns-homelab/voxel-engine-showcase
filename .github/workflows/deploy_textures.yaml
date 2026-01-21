@@ -1,0 +1,25 @@
+name: Deploy Textures
+on: 
+    push:
+        branches:
+        - main
+        paths:
+        - 'assets/textures/**'
+    workflow_dispatch:
+jobs:
+    deploy-textures:
+        runs-on: [self-hosted]
+        steps:
+        - 
+            name: checkout
+            uses: actions/checkout@v4
+        - 
+            name: send textures to assets api
+            run: |
+
+                docker --context beelink cp assets/textures assets-api:assets/textures
+        -
+            name: create version json
+            run: |
+                echo "{\"version\": \"$(uuidgen | tr 'A-Z' 'a-z')\"}" > textures_version.json \
+                && docker --context beelink cp textures_version.json assets-api:assets/versions/textures_version.json
