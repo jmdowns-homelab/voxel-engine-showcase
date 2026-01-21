@@ -33,8 +33,11 @@ jobs:
           # Create a new branch from showcase/main
           git checkout -B showcase-merge showcase/main
 
-          # Merge current code into it (allow unrelated histories since repos diverged)
-          git merge ${{ github.sha }} --allow-unrelated-histories -m "Merge from voxel-engine: ${{ github.event.head_commit.message }}"
+          # Squash merge current code (combines all changes into staged files, no commit yet)
+          git merge --squash --strategy-option=theirs --allow-unrelated-histories ${{ github.sha }}
 
-          # Push the merged result
+          # Create a single commit with all the changes
+          git commit -m "Update from voxel-engine: ${{ github.event.head_commit.message }}"
+
+          # Push the single commit
           git push showcase showcase-merge:main
